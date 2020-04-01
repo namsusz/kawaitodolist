@@ -58,31 +58,6 @@ export default class App extends React.Component {
   _loadToDos = () => {
     this.setState({ loadedToDos: true });
   };
-  _addToDo = () => {
-    const { newToDo } = this.state;
-    if (newToDo !== "") {
-      this.setState(prevState => {
-        const ID = uuidv1();
-        const newToDoObject = {
-          [ID]: {
-            id: ID,
-            isCompleted: false,
-            text: newToDo,
-            createdAt: Date.now()
-          }
-        };
-        const newState = {
-          ...prevState,
-          newToDo: "",
-          ToDos: {
-            ...prevState.ToDos,
-            ...newToDoObject
-          }
-        };
-        return { ...newState };
-      });
-    }
-  };
 }
 
 const styles = StyleSheet.create({

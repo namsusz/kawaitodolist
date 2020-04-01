@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: width / 2,
-    marginVertical: 10,
+    marginVertical: 12,
     paddingBottom: 5
   }
 });
