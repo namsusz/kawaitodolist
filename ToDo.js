@@ -7,18 +7,31 @@ import {
   Dimensions,
   TextInput
 } from "react-native";
+import PropTypes from "prop-types";
 
 const { width } = Dimensions.get("window");
 
 export default class ToDo extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { isEditing: false, todoValue: props.text };
+  }
+  static propTypes = {
+    text: PropTypes.string.isRequired,
+    isCompleted: PropTypes.bool.isRequired,
+    deleteToDo: PropTypes.func.isRequired,
+    id: PropTypes.string.isRequired,
+    uncompleteToDo: PropTypes.func.isRequired,
+    completeToDo: PropTypes.func.isRequired,
+    updateToDo: PropTypes.func.isRequired
+  };
   state = {
     isEditing: false,
-    isCompleted: false,
     todoValue: ""
   };
   render() {
-    const { isCompleted, isEditing, todoValue } = this.state;
-    const { text } = this.props;
+    const { isEditing, todoValue } = this.state;
+    const { text, id, deleteToDo, isCompleted } = this.props;
     return (
       <View style={styles.container}>
         <View style={styles.column}>
@@ -42,6 +55,7 @@ export default class ToDo extends React.Component {
               onChangeText={this._controllInput}
               returnKeyType={"done"}
               onBlur={this._finishEditing}
+              underlineColorAndroid={"transparent"}
             />
           ) : (
             <Text
@@ -66,10 +80,15 @@ export default class ToDo extends React.Component {
           <View style={styles.actions}>
             <TouchableOpacity onPressOut={this._startEditing}>
               <View style={styles.actionContainer}>
-                <Text style={styles.actionText}>✏</Text>
+                <Text style={styles.actionText}>✍🏻</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPressOut={event => {
+                event.stopPropagation;
+                deleteToDo(id);
+              }}
+            >
               <View style={styles.actionContainer}>
                 <Text style={styles.actionText}>❌</Text>
               </View>
@@ -80,18 +99,24 @@ export default class ToDo extends React.Component {
     );
   }
 
-  _toggleComplete = () => {
-    this.setState(prevState => {
-      return {
-        isCompleted: !prevState.isCompleted
-      };
-    });
+  _toggleComplete = event => {
+    event.stopPropagation();
+    const { isCompleted, uncompleteToDo, completeToDo, id } = this.props;
+    if (isCompleted) {
+      uncompleteToDo(id);
+    } else {
+      completeToDo(id);
+    }
   };
-  _startEditing = () => {
-    const { text } = this.props;
-    this.setState({ isEditing: true, todoValue: text });
+  _startEditing = event => {
+    event.stopPropagation();
+    this.setState({ isEditing: true });
   };
-  _finishEditing = () => {
+  _finishEditing = event => {
+    event.stopPropagation();
+    const { todoValue } = this.state;
+    const { id, updateToDo } = this.props;
+    updateToDo(id, todoValue);
     this.setState({ isEditing: false });
   };
   _controllInput = text => {
@@ -119,10 +144,11 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: "500",
     fontSize: 17,
-    marginVertical: 17
+    marginVertical: 20
   },
   completedCircle: {
     borderColor: "#bbb"
+    // borderWidth: 12
   },
   uncompletedCircle: {
     borderColor: "#0D47A1"
@@ -136,8 +162,7 @@ const styles = StyleSheet.create({
   },
   column: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
+    alignItems: "center"
   },
   actions: {
     flexDirection: "row"
@@ -148,7 +173,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: width / 2,
-    marginVertical: 12,
+    marginVertical: 15,
     paddingBottom: 5
   }
 });
